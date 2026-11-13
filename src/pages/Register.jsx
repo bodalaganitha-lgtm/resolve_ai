@@ -1,6 +1,7 @@
 
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { API_URL } from "../config";
 
 function Register() {
   const navigate = useNavigate();
@@ -14,28 +15,52 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+
+    if (!cleanName) {
+      setError("Please enter your full name.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/register",
-        {
+      let response;
+
+      try {
+        response = await fetch(`${API_URL}/api/auth/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name,
-            email,
+            name: cleanName,
+            email: cleanEmail,
             password,
           }),
-        }
-      );
+        });
+      } catch {
+        // fetch only throws when the server cannot be reached at all.
+        throw new Error(
+          "Cannot reach the server. Please check that the backend is running and try again."
+        );
+      }
 
-      const data = await response.json();
+      // The body may not be JSON (e.g. an error page from a proxy).
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
+        throw new Error(
+          data.message ||
+            `Registration failed (error ${response.status}). Please try again.`
+        );
       }
 
       navigate("/login", {
@@ -43,7 +68,7 @@ function Register() {
       });
 
     } catch (err) {
-      setError(err.message || "Unable to connect to server");
+      setError(err.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }

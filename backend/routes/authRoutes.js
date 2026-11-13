@@ -3,31 +3,30 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import {
+  validateRegistration,
+  mapRegistrationError,
+} from "../utils/authHelpers.js";
 
 const router = express.Router();
 
 // CUSTOMER REGISTRATION
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    // Validates types, trims the name, lower-cases the email and checks
+    // lengths, so bad input gets a clear 400 instead of crashing the route.
+    const { error: validationError, value } = validateRegistration(req.body);
 
-    if (!name || !email || !password) {
+    if (validationError) {
       return res.status(400).json({
         success: false,
-        message: "Please fill in all fields",
+        message: validationError,
       });
     }
 
-    if (password.length < 8) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be at least 8 characters",
-      });
-    }
+    const { name, email, password } = value;
 
-    const existingUser = await User.findOne({
-      email: email.trim().toLowerCase(),
-    });
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(409).json({
@@ -56,10 +55,16 @@ router.post("/register", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Registration error:", error.message);
-    res.status(500).json({
+    console.error("Registration error:", error);
+
+    // 409 for a duplicate email that slipped past the check above (two
+    // sign-ups at once), 503 when the database is unreachable, 400 for a
+    // schema validation failure, 500 otherwise.
+    const { status, message } = mapRegistrationError(error);
+
+    res.status(status).json({
       success: false,
-      message: "Registration failed",
+      message,
     });
   }
 });
