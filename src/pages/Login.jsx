@@ -1,0 +1,171 @@
+
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+
+function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      // Save authentication details for this browser session
+      sessionStorage.setItem("token", data.token);
+      sessionStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect according to the user's role
+      if (data.user.role === "manager") {
+        navigate("/manager-dashboard");
+      } else {
+        navigate("/customer-dashboard");
+      }
+
+    } catch (err) {
+      setError(err.message || "Unable to connect to server");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#07111F] text-white">
+
+      <header className="border-b border-white/10 bg-[#07111F]/90">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+
+          <Link to="/" className="text-2xl font-bold">
+            Resolve<span className="text-blue-400">AI</span>
+          </Link>
+
+          <Link
+            to="/"
+            className="text-sm text-slate-400 transition hover:text-white"
+          >
+            ← Back to Home
+          </Link>
+
+        </div>
+      </header>
+
+      <main className="flex min-h-[calc(100vh-81px)] items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md">
+
+          <div className="text-center">
+
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 text-xl font-bold shadow-lg shadow-blue-500/20">
+              R
+            </div>
+
+            <h1 className="mt-6 text-3xl font-bold">
+              Welcome back
+            </h1>
+
+            <p className="mt-3 text-sm text-slate-400">
+              Sign in to continue to ResolveAI
+            </p>
+
+          </div>
+
+          <form
+            onSubmit={handleLogin}
+            className="mt-8 rounded-3xl border border-white/10 bg-[#0D1B2A] p-6 shadow-2xl sm:p-8"
+          >
+
+            {location.state?.message && (
+              <p className="mb-5 rounded-xl border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-400">
+                {location.state.message}
+              </p>
+            )}
+
+            {error && (
+              <p className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                {error}
+              </p>
+            )}
+
+            <div>
+              <label className="text-sm font-medium text-slate-300">
+                Email address
+              </label>
+
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-2 w-full rounded-xl border border-white/10 bg-[#07111F] px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-400"
+                required
+              />
+            </div>
+
+            <div className="mt-5">
+
+              <label className="text-sm font-medium text-slate-300">
+                Password
+              </label>
+
+              <input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-2 w-full rounded-xl border border-white/10 bg-[#07111F] px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-400"
+                required
+              />
+
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-7 w-full rounded-xl bg-gradient-to-r from-blue-500 to-violet-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Signing In..." : "Sign In"}
+            </button>
+
+            <p className="mt-6 text-center text-sm text-slate-400">
+              Don't have an account?{" "}
+              <Link
+                to="/register"
+                className="font-semibold text-blue-400 hover:text-blue-300"
+              >
+                Create one
+              </Link>
+            </p>
+
+          </form>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default Login;
