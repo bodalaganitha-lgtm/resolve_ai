@@ -1,5 +1,6 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 function CTA() {
   return (
@@ -38,18 +39,25 @@ function CTA() {
 
             <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
 
-              <button className="group flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-blue-700 shadow-xl shadow-blue-950/20 transition duration-300 hover:-translate-y-0.5 hover:bg-blue-50">
+              <Link
+                to="/register"
+                className="group flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-blue-700 shadow-xl shadow-blue-950/20 transition duration-300 hover:-translate-y-0.5 hover:bg-blue-50"
+              >
                 Get Started
 
                 <ArrowRight
                   size={18}
                   className="transition-transform duration-300 group-hover:translate-x-1"
                 />
-              </button>
+              </Link>
 
-              <button className="rounded-xl border border-white/20 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition duration-300 hover:bg-white/15">
+              {/* Dashboards need an account, so send visitors to log in. */}
+              <Link
+                to="/login"
+                className="rounded-xl border border-white/20 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition duration-300 hover:bg-white/15"
+              >
                 Explore Dashboard
-              </button>
+              </Link>
 
             </div>
 

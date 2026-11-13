@@ -1,5 +1,6 @@
 import { ArrowRight, Play, Sparkles, ShieldCheck, Brain, Clock3 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import heroImage from "../../assets/hero.png";
 
 function Hero() {
@@ -45,19 +46,25 @@ function Hero() {
             {/* Buttons */}
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
 
-              <button className="group inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-4 font-semibold text-white shadow-xl shadow-blue-600/20 transition hover:-translate-y-1 hover:bg-blue-700">
+              <Link
+                to="/register"
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-4 font-semibold text-white shadow-xl shadow-blue-600/20 transition hover:-translate-y-1 hover:bg-blue-700"
+              >
                 Get Started
 
                 <ArrowRight
                   size={18}
                   className="transition-transform group-hover:translate-x-1"
                 />
-              </button>
+              </Link>
 
-              <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-4 font-semibold text-slate-200 shadow-sm transition hover:-translate-y-1 hover:border-blue-200 hover:text-blue-600">
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-4 font-semibold text-slate-200 shadow-sm transition hover:-translate-y-1 hover:border-blue-200 hover:text-blue-600"
+              >
                 <Play size={17} />
                 See How It Works
-              </button>
+              </a>
 
             </div>
 

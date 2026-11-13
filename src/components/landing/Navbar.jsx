@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { ArrowRight, Bot } from "lucide-react";
 
 function Navbar() {
@@ -48,18 +49,24 @@ function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <button className="hidden px-4 py-2 text-sm font-semibold text-slate-300 transition hover:text-blue-600 sm:block">
+          <Link
+            to="/login"
+            className="hidden px-4 py-2 text-sm font-semibold text-slate-300 transition hover:text-blue-600 sm:block"
+          >
             Log in
-          </button>
+          </Link>
 
-          <button className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:from-blue-500 hover:to-violet-500">
+          <Link
+            to="/register"
+            className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:from-blue-500 hover:to-violet-500"
+          >
             Get Started
 
             <ArrowRight
               size={16}
               className="transition-transform group-hover:translate-x-1"
             />
-          </button>
+          </Link>
         </div>
 
       </div>
