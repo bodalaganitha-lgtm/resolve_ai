@@ -92,6 +92,18 @@ const complaintSchema = new mongoose.Schema(
       analyzedAt: {
         type: Date,
       },
+
+      // "gemini" for real AI analysis, "local-fallback" when Gemini was
+      // overloaded and the built-in rule-based analysis was used instead.
+      source: {
+        type: String,
+        enum: ["gemini", "local-fallback"],
+      },
+
+      model: {
+        type: String,
+        default: "",
+      },
     },
   },
   { timestamps: true }

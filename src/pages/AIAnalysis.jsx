@@ -238,6 +238,7 @@ function AIAnalysis() {
             <p className="mt-2 text-sm text-slate-400">
               Please wait while ResolveAI identifies the issue,
               sentiment, priority, and recommended resolution.
+              If Gemini is busy this can take up to a minute.
             </p>
 
           </div>
@@ -275,6 +276,33 @@ function AIAnalysis() {
         {/* Actual Gemini Results */}
         {!loading && !error && analysis && (
           <>
+
+            {/* Preliminary analysis notice (Gemini was overloaded) */}
+            {analysis.source === "local-fallback" && (
+              <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-amber-400/20 bg-amber-400/5 p-5 sm:flex-row sm:items-center sm:justify-between">
+
+                <div className="flex items-start gap-3 text-amber-400">
+                  <AlertTriangle
+                    size={20}
+                    className="mt-0.5 shrink-0"
+                  />
+
+                  <p className="text-sm leading-6 text-slate-300">
+                    {analysis.notice ||
+                      "Gemini AI is busy right now, so this is a preliminary analysis. Try again in a few minutes for a full AI analysis."}
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleRetry}
+                  className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-amber-400/30 px-4 py-2.5 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/10"
+                >
+                  <RefreshCw size={16} />
+                  Retry with Gemini
+                </button>
+
+              </div>
+            )}
 
             {/* Result Cards */}
             <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-4">

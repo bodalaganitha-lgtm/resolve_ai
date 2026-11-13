@@ -151,7 +151,9 @@ router.post("/:id/analyze", authMiddleware, async (req, res) => {
       });
     }
 
-    // Call Gemini AI
+    // Analyze with Gemini. analyzeComplaint retries, falls back to other
+    // Gemini models, and finally to a rule-based analysis, so it only throws
+    // for invalid input.
     let aiResult;
 
     try {
@@ -159,18 +161,47 @@ router.post("/:id/analyze", authMiddleware, async (req, res) => {
 
     } catch (aiError) {
 
-      // MODIFIED: Display actual Gemini error
-      console.error("GEMINI ANALYSIS ERROR:", aiError);
+      console.error("COMPLAINT ANALYSIS ERROR:", aiError);
 
-      return res.status(502).json({
+      return res.status(500).json({
         success: false,
         message:
           aiError.message ||
-          "Gemini AI analysis failed.",
+          "Unable to analyze complaint.",
       });
     }
 
-    // Save AI results to MongoDB
+    // If Gemini is overloaded on a retry, do not overwrite an earlier real
+    // Gemini analysis with the weaker rule-based one.
+    const existing = complaint.analysis;
+
+    const hasGeminiAnalysis =
+      Boolean(existing?.keyIssue) &&
+      existing?.source !== "local-fallback";
+
+    if (aiResult.fallback && hasGeminiAnalysis) {
+      return res.status(200).json({
+        success: true,
+        message:
+          "Gemini is busy right now. Showing your previous AI analysis.",
+        complaint,
+        analysis: {
+          sentiment: complaint.sentiment,
+          category: complaint.category,
+          priority: complaint.priority,
+          confidence: existing.confidence,
+          keyIssue: existing.keyIssue,
+          sentimentReason: existing.sentimentReason,
+          recommendedResolution: existing.recommendedResolution,
+          actionItems: existing.actionItems,
+          source: existing.source || "gemini",
+          model: existing.model || "",
+          fallback: false,
+        },
+      });
+    }
+
+    // Save analysis results to MongoDB
     complaint.sentiment = aiResult.sentiment;
     complaint.category = aiResult.category;
     complaint.priority = aiResult.priority;
@@ -181,6 +212,8 @@ router.post("/:id/analyze", authMiddleware, async (req, res) => {
       sentimentReason: aiResult.sentimentReason,
       recommendedResolution: aiResult.recommendedResolution,
       actionItems: aiResult.actionItems,
+      source: aiResult.source,
+      model: aiResult.model,
       analyzedAt: new Date(),
     };
 
@@ -188,7 +221,9 @@ router.post("/:id/analyze", authMiddleware, async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Complaint analyzed successfully.",
+      message: aiResult.fallback
+        ? "Gemini is busy, so a preliminary analysis was generated."
+        : "Complaint analyzed successfully.",
       complaint,
       analysis: aiResult,
     });
